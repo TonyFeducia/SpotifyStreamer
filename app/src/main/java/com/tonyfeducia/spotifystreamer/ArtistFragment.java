@@ -4,14 +4,12 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -27,7 +25,7 @@ import kaaes.spotify.webapi.android.models.ArtistsPager;
 
 
 public class ArtistFragment extends Fragment {
-//    String LOG_TAG = "";
+
 
     private ArtistAdapter mArtistsAdapter;  //my custom adapter
     private ArrayList<Artist> artists;      //the array to hold the artists
@@ -43,9 +41,8 @@ public class ArtistFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-//        LOG_TAG = getString(R.string.app_log_tag);
 
-        if (artists == null)  //why do we need this check?
+        if (artists == null)
             artists = new ArrayList<Artist>();
 
         mArtistsAdapter = new ArtistAdapter(  //connecting the adapter
@@ -63,7 +60,7 @@ public class ArtistFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Artist artist = (Artist) parent.getAdapter().getItem(position);
-            // onClick we are launching the detail activity
+                // onClick we are launching the detail activity
                 Intent intent = new Intent(getActivity(), TracksActivity.class);
                 intent.putExtra(Intent.EXTRA_TEXT, artist.id);  //sending the artist info over to the tracks activity
                 intent.putExtra(Intent.EXTRA_TITLE, artist.name);
@@ -71,16 +68,18 @@ public class ArtistFragment extends Fragment {
             }
         });
 
-        EditText edtArtist = (EditText)rootView.findViewById(R.id.editText);
-        edtArtist.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {  }
 
+        SearchView artistSearch = (SearchView)rootView.findViewById(R.id.searchView);
+        artistSearch.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {  }
-
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
             @Override
-            public void afterTextChanged(Editable s) { updateArtists(s.toString()); }
+            public boolean onQueryTextChange(String query) {
+                updateArtists(query);
+                return true;
+            }
         });
 
         return rootView;
@@ -89,7 +88,6 @@ public class ArtistFragment extends Fragment {
     private void updateArtists(String SearchString) {
         if (!SearchString.equals(this.searchTerm)) {
             this.searchTerm = SearchString;
-
             if (!SearchString.isEmpty()) {
                 FetchArtistsTask task = new FetchArtistsTask();
                 task.execute(SearchString);
@@ -100,23 +98,15 @@ public class ArtistFragment extends Fragment {
     public class FetchArtistsTask extends AsyncTask<String, Void, ArrayList<Artist>> {
         @Override
         protected ArrayList<Artist> doInBackground(String... params) {
-            artists = new ArrayList<Artist>();
+        artists = new ArrayList<Artist>();
 
-//            try {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
-                ArtistsPager artistsPager = spotify.searchArtists(params[0]);
-
-                for (Artist artist : artistsPager.artists.items) {
-                    ArtistFragment.this.artists.add(artist);
-                }
-//            }
-//            catch (Exception e) {
-//                Log.e(LOG_TAG, e.getMessage());
-//                artists = null;
-//            }
-
-            return artists;
+        SpotifyApi api = new SpotifyApi();
+        SpotifyService spotify = api.getService();
+        ArtistsPager artistsPager = spotify.searchArtists(params[0]);
+        for (Artist artist : artistsPager.artists.items) {
+            ArtistFragment.this.artists.add(artist);
+        }
+        return artists;
         }
 
         @Override
@@ -126,11 +116,9 @@ public class ArtistFragment extends Fragment {
                 toast.show();
             } else {
                 mArtistsAdapter.clear();
-
                 for (Artist artist : artists) {
                     mArtistsAdapter.add(artist);
                 }
-
                 if (mArtistsAdapter.isEmpty()) {
                     Toast toast = Toast.makeText(getActivity(), "No Search Results", Toast.LENGTH_SHORT);
                     toast.show();

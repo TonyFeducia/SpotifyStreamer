@@ -23,7 +23,7 @@ import kaaes.spotify.webapi.android.models.Tracks;
 
 public class TracksFragment extends Fragment {
 
-//    String LOG_TAG = "";
+    //following the process of the artist fragment
     TracksAdapter mTracksAdapter;
     private String searchTerm;
     ArrayList<Track> tracks;
@@ -61,13 +61,12 @@ public class TracksFragment extends Fragment {
         if ((intent != null) && intent.hasExtra(extra)) {
             artistID = intent.getStringExtra(extra);
         }
-
-        fetchTopTenTracks(artistID);
+        updateTracks(artistID);
 
         return rootView;
     }
 
-    private void fetchTopTenTracks(String searchTerm) {
+    private void updateTracks(String searchTerm) {
         if (!searchTerm.equals(this.searchTerm)) {
             this.searchTerm = searchTerm;
 
@@ -103,13 +102,9 @@ public class TracksFragment extends Fragment {
                 toast.show();
             } else {
                 mTracksAdapter.clear();
-
-
                 for (Track track : tracks) {
                     mTracksAdapter.add(track);
                 }
-
-
                 if (mTracksAdapter.isEmpty()) {
                     Toast toast = Toast.makeText(getActivity(), "No Tracks Found for this Artist", Toast.LENGTH_SHORT);
                     toast.show();
