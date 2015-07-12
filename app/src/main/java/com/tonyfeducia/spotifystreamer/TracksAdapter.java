@@ -18,73 +18,68 @@ import java.util.ArrayList;
 import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
 
-/**
- * Custom adapter code is adapted from http://www.softwarepassion.com/android-series-custom-listview-items-and-adapters/
- * Spotify icon is cropped from the Spotify Design Resources package at https://developer.spotify.com/design/
- */
 public class TracksAdapter extends ArrayAdapter<Track> {
 
-    private ArrayList<Track> items;
+    private ArrayList<Track> tracksArrayList;
     private Context context;
 
-    public TracksAdapter(Context context, int resource, int textViewResourceId, ArrayList<Track> objects) {
-        super(context, resource, textViewResourceId, objects);
+    public TracksAdapter(Context context, int resource, int textViewResourceId, ArrayList<Track> tracks) {
+        super(context, resource, textViewResourceId, tracks);
 
         this.context = context;
-        this.items = objects;
+        this.tracksArrayList = tracks;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
-        if (v == null) {
-            LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = vi.inflate(R.layout.tracks_item, null);
+
+        View tracksView = convertView;
+
+        if (tracksView == null) {
+            LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            tracksView = inflater.inflate(R.layout.tracks_item, null);
         }
 
-        Track o = items.get(position);
-        if (o != null) {
-            TextView tt;
-            ImageView img;
+        Track track = tracksArrayList.get(position);
+        if (track != null) {
+            TextView trackName;
+            ImageView trackIcon;
 
-            tt = (TextView) v.findViewById(R.id.tracks_text);
-            if (tt == null) {
+            trackName = (TextView) tracksView.findViewById(R.id.tracks_text);
+            if (trackName == null) {
             } else {
-                tt.setText(o.name);
+                trackName.setText(track.name);
             }
 
-            tt = (TextView) v.findViewById(R.id.tracks_subtext);
-            if (tt == null) {
+            trackName = (TextView) tracksView.findViewById(R.id.tracks_subtext);
+            if (trackName == null) {
             } else {
-                tt.setText(o.album.name);
+                trackName.setText(track.album.name);
             }
 
-            img = (ImageView) v.findViewById(R.id.tracks_icon);
-            if (img == null) {
+            trackIcon = (ImageView) tracksView.findViewById(R.id.tracks_icon);
+            if (trackIcon == null) {
             } else {
-                if (o.album.images == null || o.album.images.isEmpty()) {
+                if (track.album.images == null || track.album.images.isEmpty()) {
                     Picasso.with(context)
                             .load(R.drawable.spotify)
                             .resize(200, 200)
-                            .into(img);
+                            .into(trackIcon);
                 } else {
-                    // try to get the medium size image for the list view
-                    // it's usually the second image on the result list
                     Image image;
-                    if (o.album.images.size() >= 2)
-                        image = o.album.images.get(1);
+                    if (track.album.images.size() >= 2)
+                        image = track.album.images.get(1);
                     else
-                        image = o.album.images.get(0);
+                        image = track.album.images.get(0);
 
                     Picasso.with(context)
                             .load(image.url)
-                            .placeholder(R.drawable.spotify)
                             .error(R.drawable.spotify)
                             .resize(200, 200)
-                            .into(img);
+                            .into(trackIcon);
                 }
             }
         }
-        return v;
+        return tracksView;
     }
 }

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,37 +21,34 @@ import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 
 
-/**
- * The code for retaining the fragment state is adapted from http://www.androiddesignpatterns.com/2013/04/retaining-objects-across-config-changes.html
- */
 public class TracksFragment extends Fragment {
 
-    String LOG_TAG = "";
+//    String LOG_TAG = "";
     TracksAdapter mTracksAdapter;
-    private String mSearchArgument;
-    ArrayList<Track> mSpotifyTracks;
+    private String searchTerm;
+    ArrayList<Track> tracks;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Retain this fragment across configuration changes.
+        // should retain this fragment on rotation
         setRetainInstance(true);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        LOG_TAG = getString(R.string.app_log_tag);
+//        LOG_TAG = getString(R.string.app_log_tag);
 
-        if (mSpotifyTracks == null)
-            mSpotifyTracks = new ArrayList<Track>();
+        if (tracks == null)
+            tracks = new ArrayList<Track>();
 
         mTracksAdapter = new TracksAdapter(
                 getActivity(),
                 R.layout.tracks_item,
                 R.id.tracks_text,
-                mSpotifyTracks);
+                tracks);
 
         View rootView = inflater.inflate(R.layout.fragment_tracks, container, false);
 
@@ -60,7 +56,6 @@ public class TracksFragment extends Fragment {
         listView.setAdapter(mTracksAdapter);
 
         String extra = Intent.EXTRA_TEXT;
-
         String artistID = "";
         Intent intent = getActivity().getIntent();
         if ((intent != null) && intent.hasExtra(extra)) {
@@ -72,54 +67,51 @@ public class TracksFragment extends Fragment {
         return rootView;
     }
 
-    private void fetchTopTenTracks(String searchArgument) {
-        if (!searchArgument.equals(this.mSearchArgument)) {
-            this.mSearchArgument = searchArgument;
+    private void fetchTopTenTracks(String searchTerm) {
+        if (!searchTerm.equals(this.searchTerm)) {
+            this.searchTerm = searchTerm;
 
-            FetchTopTenTracksTask task = new FetchTopTenTracksTask();
-            task.execute(searchArgument);
+            FetchTracksTask task = new FetchTracksTask();
+            task.execute(searchTerm);
         }
     }
 
-    public class FetchTopTenTracksTask extends AsyncTask<String, Void, ArrayList<Track>> {
+    public class FetchTracksTask extends AsyncTask<String, Void, ArrayList<Track>> {
         @Override
         protected ArrayList<Track> doInBackground(String... params) {
-            mSpotifyTracks = new ArrayList<Track>();
+            tracks = new ArrayList<Track>();
 
+            //need this for the spotify API top track call
             Map<String, Object> queryMap = new HashMap<>();
             queryMap.put("country", "US");
 
-            try {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
-                Tracks tracks = spotify.getArtistTopTrack(params[0], queryMap);
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            Tracks tracks = spotify.getArtistTopTrack(params[0], queryMap);
 
-                for (Track track : tracks.tracks) {
-                    mSpotifyTracks.add(track);
-                }
-            }
-            catch (Exception e) {
-                Log.e(LOG_TAG, e.getMessage());
-                mSpotifyTracks = null;
+            for (Track track : tracks.tracks) {
+                TracksFragment.this.tracks.add(track);
             }
 
-            return mSpotifyTracks;
+            return TracksFragment.this.tracks;
         }
 
         @Override
         protected void onPostExecute(ArrayList<Track> tracks) {
             if (tracks == null) {
-                Toast toast = Toast.makeText(getActivity(), getString(R.string.error_search_top_tracks), Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getActivity(), "No Tracks Found for this Artist", Toast.LENGTH_SHORT);
                 toast.show();
             } else {
                 mTracksAdapter.clear();
+
 
                 for (Track track : tracks) {
                     mTracksAdapter.add(track);
                 }
 
+
                 if (mTracksAdapter.isEmpty()) {
-                    Toast toast = Toast.makeText(getActivity(), getString(R.string.warn_empty_search_top_tracks), Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getActivity(), "No Tracks Found for this Artist", Toast.LENGTH_SHORT);
                     toast.show();
                 }
             }

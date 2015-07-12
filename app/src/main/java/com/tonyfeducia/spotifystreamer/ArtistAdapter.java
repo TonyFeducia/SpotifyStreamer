@@ -20,53 +20,52 @@ import kaaes.spotify.webapi.android.models.Artist;
  */
 public class ArtistAdapter extends ArrayAdapter<Artist> {
 
-    private ArrayList<Artist> items;
+    private ArrayList<Artist> artistsArrayList;
     private Context context;
 
     public ArtistAdapter(Context context, int resource, int textViewResourceId, ArrayList<Artist> objects) {
         super(context, resource, textViewResourceId, objects);
 
         this.context = context;
-        this.items = objects;
+        this.artistsArrayList = objects;
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        View v = convertView;
-        if (v == null) {
-            LayoutInflater vi = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = vi.inflate(R.layout.artist_result_item, null);
+        View artistView = convertView;
+        if (artistView == null) {
+            LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            artistView = inflater.inflate(R.layout.artist_result_item, null);
         }
 
-        Artist o = items.get(position);
-        if (o != null) {
-            TextView tt;
-            ImageView img;
+        Artist artist = artistsArrayList.get(position);
+        if (artist != null) {
+            TextView artistName;
+            ImageView artistIcon;
 
-            tt = (TextView) v.findViewById(R.id.artist_result_text);
-            if (tt == null) {
+            artistName = (TextView) artistView.findViewById(R.id.artist_result_text);
+            if (artistName == null) {
             } else {
-                tt.setText(o.name);
+                artistName.setText(artist.name);
             }
 
-            img = (ImageView) v.findViewById(R.id.artist_result_icon);
-            if (img == null) {
+            artistIcon = (ImageView) artistView.findViewById(R.id.artist_result_icon);
+            if (artistIcon == null) {
             } else {
-                if (o.images == null || o.images.isEmpty()) {
+                if (artist.images == null || artist.images.isEmpty()) {
                     Picasso.with(context)
-                            .load(R.mipmap.ic_launcher)
+                            .load(R.drawable.spotify)
                             .resize(200, 200)
-                            .into(img);
+                            .into(artistIcon);
                 } else {
                     Picasso.with(context)
-                            .load(o.images.get(0).url)
-                            .placeholder(R.mipmap.ic_launcher)
-                            .error(R.mipmap.ic_launcher)
+                            .load(artist.images.get(0).url)
+                            .error(R.drawable.spotify)
                             .resize(200, 200)
-                            .into(img);
+                            .into(artistIcon);
                 }
             }
         }
-        return v;
+        return artistView;
     }
 }

@@ -37,7 +37,7 @@ public class ArtistFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRetainInstance(true);  // this should retain this fragment
+        setRetainInstance(true);  // this as a simple option should retain this fragment on rotation
     }
 
     @Override
@@ -48,7 +48,7 @@ public class ArtistFragment extends Fragment {
         if (artists == null)  //why do we need this check?
             artists = new ArrayList<Artist>();
 
-        mArtistsAdapter = new ArtistAdapter(  //connecting the apapter
+        mArtistsAdapter = new ArtistAdapter(  //connecting the adapter
                 getActivity(),
                 R.layout.artist_result_item,
                 R.id.artist_result_text,
@@ -65,7 +65,7 @@ public class ArtistFragment extends Fragment {
                 Artist artist = (Artist) parent.getAdapter().getItem(position);
             // onClick we are launching the detail activity
                 Intent intent = new Intent(getActivity(), TracksActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, artist.id);  //sending the artist info over to the new activity
+                intent.putExtra(Intent.EXTRA_TEXT, artist.id);  //sending the artist info over to the tracks activity
                 intent.putExtra(Intent.EXTRA_TITLE, artist.name);
                 startActivity(intent);
             }
@@ -86,21 +86,13 @@ public class ArtistFragment extends Fragment {
         return rootView;
     }
 
-    /*
-    * Compare the saved search argument and the current search argument;
-    * Do the search only if the arguments don't match
-    *
-    * The deletion of the last character in the search box doesn't trigger the search because of the second 'if'.
-    * I didn't intend to implement this behaviour but I like it better than blanking the list view
-    * when the user deletes the last character in the search box.
-    */
-    private void updateArtists(String searchArgument) {
-        if (!searchArgument.equals(this.searchTerm)) {
-            this.searchTerm = searchArgument;
+    private void updateArtists(String SearchString) {
+        if (!SearchString.equals(this.searchTerm)) {
+            this.searchTerm = SearchString;
 
-            if (!searchArgument.isEmpty()) {
+            if (!SearchString.isEmpty()) {
                 FetchArtistsTask task = new FetchArtistsTask();
-                task.execute(searchArgument);
+                task.execute(SearchString);
             }
         }
     }
@@ -130,7 +122,7 @@ public class ArtistFragment extends Fragment {
         @Override
         protected void onPostExecute(ArrayList<Artist> artists) {
             if (artists == null) {
-                Toast toast = Toast.makeText(getActivity(), getString(R.string.error_search_artists), Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getActivity(), "No Search Results", Toast.LENGTH_SHORT);
                 toast.show();
             } else {
                 mArtistsAdapter.clear();
@@ -140,7 +132,7 @@ public class ArtistFragment extends Fragment {
                 }
 
                 if (mArtistsAdapter.isEmpty()) {
-                    Toast toast = Toast.makeText(getActivity(), getString(R.string.warn_empty_search_artists), Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getActivity(), "No Search Results", Toast.LENGTH_SHORT);
                     toast.show();
                 }
             }
